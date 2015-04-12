@@ -1,0 +1,30 @@
+#demo:
+   # path:     /
+   # defaults: { _controller: "DemoBundle:Demo:index" }
+
+demo_show:
+    path:     /{id}/show
+    defaults: { _controller: "DemoBundle:Demo:show" }
+
+demo_new:
+    path:     /new
+    defaults: { _controller: "DemoBundle:Demo:new" }
+
+demo_create:
+    path:     /create
+    defaults: { _controller: "DemoBundle:Demo:create" }
+    methods:  POST
+
+demo_edit:
+    path:     /{id}/edit
+    defaults: { _controller: "DemoBundle:Demo:edit" }
+
+demo_update:
+    path:     /{id}/update
+    defaults: { _controller: "DemoBundle:Demo:update" }
+    methods:  [POST, PUT]
+
+demo_delete:
+    path:     /{id}/delete
+    defaults: { _controller: "DemoBundle:Demo:delete" }
+    methods:  [POST, DELETE]

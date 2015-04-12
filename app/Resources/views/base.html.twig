@@ -1,12 +1,27 @@
 <!DOCTYPE html>
 <html>
     <head>
-        <meta charset="UTF-8" />
-        <title>{% block title %}Welcome!{% endblock %}</title>
-        {% block stylesheets %}{% endblock %}
+        <meta name="viewport" content="width=device-width, minimum-scale=1.0, maximum-scale=1.0" />
+        <link rel="shortcut icon" href="bundles/demo/images/icon.ico" />
+        <title>
+            {%- if block('title') -%}
+            {{- block('title') -}}  Welcome Guys and Gals!
+                {%- else -%}
+                Demo Ready to rumble!
+                {%- endif -%}
+        </title>
+        {% block stylesheets %}
+            {% stylesheets
+            'bundles/demo/css/style.css'
+                filter='cssrewrite'
+            %}
+            <link href="{{ asset_url }}" rel="stylesheet">
+        {% endstylesheets %}
+        {% endblock %}
         <link rel="icon" type="image/x-icon" href="{{ asset('favicon.ico') }}" />
     </head>
     <body>
+
         {% block body %}{% endblock %}
         {% block javascripts %}{% endblock %}
     </body>

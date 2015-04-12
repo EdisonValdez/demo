@@ -2,6 +2,10 @@ demo:
     resource: "@DemoBundle/Resources/config/routing.yml"
     prefix:   /
 
+user_routes:
+    resource: "@UserBundle/Controller"
+    type: annotation
+
 app:
     resource: "@AppBundle/Controller/"
     type:     annotation

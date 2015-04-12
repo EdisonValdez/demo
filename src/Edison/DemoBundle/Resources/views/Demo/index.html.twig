@@ -1,0 +1,71 @@
+{% extends 'DemoBundle::layout.html.twig' %}
+
+{% block body -%}
+
+    <div class="topbar">
+        <div class="header">
+            <a href=""><div class="logo"></div><div class="logo-small"></div></a>
+            <div class="search-input"><input type="text" id="search" placeholder="search companies, products"></div>
+
+            <a href="e"><div class="menu_btn" title="Register"><img src="http://phpdolphin.com/demo/themes/dolphin/images/register.png" /></div></a>
+
+            <a href="#"><div class="menu_visitor">Hello <strong>Visitor</strong></div></a>
+
+                {% if is_granted('IS_AUTHENTICATED_REMEMBERED') %}
+            <a href="{{ path('logout') }}"> <div class="menu_visitor"><strong>Logout</strong></div></a>
+            {% else %}
+                <a href="{{ path('login') }}"> <div class="menu_visitor"><strong>Login</strong> </div></a>
+            {% endif %}
+
+        </div>
+        <div class="search-container"></div>
+    </div>
+    <div class="topbar_margin"></div>
+
+    <h1>Demo list</h1>
+    <table class="records_list">
+        <thead>
+            <tr>
+                <th>Id</th>
+                <th>Name</th>
+                <th>Map</th>
+                <th>Time</th>
+                <th>Location</th>
+                <th>Details</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+        {% for entity in entities %}
+            <tr>
+                <td><a href="{{ path('demo_show', { 'id': entity.id }) }}">{{ entity.id }}</a></td>
+                <td>{{ entity.name }}</td>
+                <td>
+                    <img src="http://maps.googleapis.com/maps/api/staticmap?center={{ entity.location | url_encode }}&markers=color:red%7Ccolor:red%7C{{ entity.location | url_encode }}&zoom=11&size=100x100&maptype=roadmap&sensor=false" style="border-radius: 75px;" />
+                </td>
+                <td>{% if entity.time %}{{ entity.time|date('Y-m-d H:i:s') }}{% endif %}</td>
+                <td>{{ entity.location }}</td>
+                <td>{{ entity.details }}</td>
+                <td>
+                <ul>
+                    <li>
+                        <a href="{{ path('demo_show', { 'id': entity.id }) }}">show</a>
+                    </li>
+                    <li>
+                        <a href="{{ path('demo_edit', { 'id': entity.id }) }}">edit</a>
+                    </li>
+                </ul>
+                </td>
+            </tr>
+        {% endfor %}
+        </tbody>
+    </table>
+
+        <ul>
+        <li>
+            <a href="{{ path('demo_new') }}">
+                Create a new entry
+            </a>
+        </li>
+    </ul>
+    {% endblock %}
