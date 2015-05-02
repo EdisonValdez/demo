@@ -3,11 +3,12 @@
 namespace Edison\DemoBundle\Entity;
 
 use Doctrine\ORM\Mapping as ORM;
-
-
+use Edison\UserBundle\Entity\User;
+use Gedmo\Mapping\Annotation as Gedmo;
+use Doctrine\Common\Collections\ArrayCollection;
 /**
  * Demo
- *
+ * @ORM\HasLifecycleCallbacks
  * @ORM\Table(name="edison_demo")
  * @ORM\Entity(repositoryClass="Edison\DemoBundle\Entity\DemoRepository")
  */
@@ -50,6 +51,45 @@ class Demo
      */
     private $details;
 
+    /**
+     *
+     * @ORM\ManyToOne(targetEntity="Edison\UserBundle\Entity\User",
+     *      inversedBy="demos")
+     * @ORM\JoinColumn(onDelete="CASCADE")
+     */
+    private $owner;
+
+    /**
+     * @Gedmo\Slug(fields={"name"}, updatable=false)
+     * @ORM\Column(length=255, unique=true)
+     */
+    protected $slug;
+
+    /**
+     *
+     * @ORM\Column(type="datetime")
+     */
+    private $createdAt;
+
+    /**
+     * @Gedmo\Timestampable(on="update")
+     * @ORM\Column(type="datetime")
+     */
+    private $updatedAt;
+
+    /**
+     * @ORM\ManyToMany(targetEntity="Edison\UserBundle\Entity\User")
+     * @ORM\JoinTable(
+     *      joinColumns={@ORM\JoinColumn(onDelete="CASCADE")},
+     *      inverseJoinColumns={@ORM\JoinColumn(onDelete="CASCADE")}
+     * )
+     */
+    protected $likes;
+
+    public function __construct()
+    {
+        $this->likes = new ArrayCollection();
+    }
 
     /**
      * Get id
@@ -151,5 +191,81 @@ class Demo
     public function getDetails()
     {
         return $this->details;
+    }
+
+    /**
+     * @param User $owner
+     */
+    public function setOwner(User $owner)
+    {
+        $this->owner = $owner;
+    }
+
+    /**
+     * @return User
+     */
+    public function getOwner()
+    {
+        return $this->owner;
+    }
+
+    /**
+     * @param mixed $slug
+     */
+    public function setSlug($slug)
+    {
+        $this->slug = $slug;
+    }
+
+    /**
+     * @return mixed
+     */
+    public function getSlug()
+    {
+        return $this->slug;
+    }
+
+
+    /**
+     * @return mixed
+     */
+    public function getCreatedAt()
+    {
+        return $this->createdAt;
+    }
+
+    /**
+     * @return mixed
+     */
+    public function getUpdatedAt()
+    {
+        return $this->updatedAt;
+    }
+
+    /**
+     * @return ArrayCollection
+     */
+    public function getLikes()
+    {
+        return $this->likes;
+    }
+
+    /**
+     * @param \Edison\UserBundle\Entity\User $user
+     * @return bool
+     */
+    public function hasLikes(User $user)
+    {
+        return $this->getLikes()->contains($user);
+    }
+
+    /**
+     * @ORM\PrePersist
+     */
+    public function prePersist()
+    {
+        if (!$this->getCreatedAt()) {
+            $this->createdAt = new \DateTime();
+        }
     }
 }

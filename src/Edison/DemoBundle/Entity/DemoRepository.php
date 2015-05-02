@@ -12,4 +12,35 @@ use Doctrine\ORM\EntityRepository;
  */
 class DemoRepository extends EntityRepository
 {
+    /**
+     * @param int $max
+     * @return Demo[]
+     */
+    public function getUpcomingDemos($max = null)
+    {
+        $qb = $this->createQueryBuilder('e')
+            ->addOrderBy('e.time', 'ASC')
+            ->andWhere('e.time > :now')
+            ->setParameter('now', new \DateTime());
+
+        if($max){
+            $qb->setMaxResults($max);
+        }
+        return $qb
+            ->getQuery()
+            ->execute();
+    }
+
+    /**
+     * @return Demo[]
+     */
+    public function getRecentlyUpdatedDemo()
+    {
+        return $this->createQueryBuilder('e')
+            ->andWhere('e.updatedAt > :since')
+            ->setParameter('since', new \DateTime('24 hours ago'))
+            ->getQuery()
+            ->execute();
+
+    }
 }

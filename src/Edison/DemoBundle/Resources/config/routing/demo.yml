@@ -3,7 +3,7 @@
    # defaults: { _controller: "DemoBundle:Demo:index" }
 
 demo_show:
-    path:     /{id}/show
+    path:     /{slug}/show
     defaults: { _controller: "DemoBundle:Demo:show" }
 
 demo_new:
@@ -28,3 +28,15 @@ demo_delete:
     path:     /{id}/delete
     defaults: { _controller: "DemoBundle:Demo:delete" }
     methods:  [POST, DELETE]
+
+demo_likes:
+    path:      /{id}/likes.{format}
+    defaults:  { _controller: "DemoBundle:Demo:likes", format: html }
+    requirements:
+         format: json
+
+demo_unlikes:
+    path:      /{id}/unlikes.{format}
+    defaults:  { _controller: "DemoBundle:Demo:unlikes", format: html }
+    requirements:
+             format: json

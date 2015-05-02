@@ -9,17 +9,21 @@
 namespace Edison\DemoBundle\DataFixtures\ORM;
 
 use Doctrine\Common\DataFixtures\FixtureInterface;
+use Doctrine\Common\DataFixtures\OrderedFixtureInterface;
 use Doctrine\Common\Persistence\ObjectManager;
 use Edison\DemoBundle\Entity\Demo;
 
 
-class LoadDemo implements FixtureInterface
+class LoadDemo implements FixtureInterface, OrderedFixtureInterface
 {
     /**
      * {@inheritDoc}
      */
     public function load(ObjectManager $manager)
     {
+        $wayne = $manager->getRepository('UserBundle:User')
+            ->findOneByUsernameOrEmail('wayne');
+
         $demo = new Demo();
         $demo->setLocation('Gustav Muller strasse 123, Schoneberg Berlin');
         $demo->setName('Missing my Berlin');
@@ -34,6 +38,19 @@ class LoadDemo implements FixtureInterface
         $demo1->setDetails('Book 2nd Edition (2014) Switch to 1st Edition Download Ebook The entire Pro Git book, written by Scott Chacon and Ben Straub and published by Apress, is available here. All content is licensed under the Creative Commons Attribution Non Commercial Share Alike 3.0 license. Print versions of the book are available on Amazon.com.');
         $manager->persist($demo1);
 
+        $demo->setOwner($wayne);
+        $demo1->setOwner($wayne);
+
         $manager->flush();
+    }
+
+    /**
+     * Get the order of this fixture
+     *
+     * @return integer
+     */
+    public function getOrder()
+    {
+        return 20;
     }
 }

@@ -31,13 +31,20 @@ $container = $kernel->getContainer();
 $container->enterScope('request');
 $container->set('request', $request);
 
-use Edison\DemoBundle\Entity\Demo;
-$demo = new Demo();
-$demo->setName('Edison');
-$demo->setTime(new \DateTime('tomorrow noon'));
-$demo->setLocation('Passeig Torre Blanca 11, Sant Cugat del Valles');
-$demo->setDetails('Whatever you want put in here');
+//use Edison\DemoBundle\Entity\Demo;
+use Doctrine\ORM\EntityManager;
 
+/** @var EntityManager $em */
 $em = $container->get('doctrine')->getManager();
-$em->persist($demo);
-$em->flush();
+
+$wayne = $em->getRepository('UserBundle:User')
+    ->findOneBy(array('username' => 'wayne'));
+
+/*foreach ($user->getDemos() as $demo) {
+    var_dump($demo->getName());*/
+
+    $wayne->setPlainPassword('newpass');
+    $em->persist($wayne);
+    $em->flush();
+
+

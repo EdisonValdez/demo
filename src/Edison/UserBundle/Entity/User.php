@@ -5,14 +5,18 @@ namespace Edison\UserBundle\Entity;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Security\Core\Role\Role;
 use Symfony\Component\Security\Core\User\AdvancedUserInterface;
+use Symfony\Component\Validator\Constraints as Assert;
+use Symfony\Bridge\Doctrine\Validator\Constraints\UniqueEntity;
+use Doctrine\Common\Collections\ArrayCollection;
 
 /**
  * User
- *
+ * @UniqueEntity("email", message="This Email is already taken!!")
+ * @UniqueEntity("username", message="This Username is already taken!!")
  * @ORM\Table(name="edison_user")
  * @ORM\Entity(repositoryClass="Edison\UserBundle\Entity\UserRepository")
  */
-class User implements AdvancedUserInterface{
+class User implements AdvancedUserInterface, \Serializable{
     /**
      * @var integer
      *
@@ -24,7 +28,8 @@ class User implements AdvancedUserInterface{
 
     /**
      * @var string
-     *
+     * @Assert\NotBlank(message="Put a Username you Rebel!")
+     * @Assert\Length(min=3, minMessage="Give us at least 3 characters")
      * @ORM\Column(name="username", type="string", length=255)
      */
     private $username;
@@ -38,7 +43,19 @@ class User implements AdvancedUserInterface{
 
     /**
      * @var string
-     *
+     * @Assert\NotBlank
+     * @Assert\Regex(
+     *       pattern="/^(?=.*\d)(?=.*[a-z])(?=.*[A-Z])(?!.*\s).*$/",
+     *       message="Use at least 1 upper case letter, 1 lower case and 1 number!"
+     * )
+     * Just stores the plain password temporarily
+     */
+    private $plainPassword;
+
+    /**
+     * @var string
+     * @Assert\NotBlank()
+     * @Assert\Email
      * @ORM\Column(name="email", type="string", length=255)
      */
     private $email;
@@ -56,6 +73,35 @@ class User implements AdvancedUserInterface{
      * @ORM\Column(name="is_active", type="boolean")
      */
      private $isActive = true;
+
+    /**
+     * @ORM\OneToMany(
+     *   targetEntity="Edison\DemoBundle\Entity\Demo",
+     *    mappedBy="owner")
+     */
+    protected $demos;
+
+    public function __construct()
+    {
+        $this->demos = new ArrayCollection();
+    }
+
+    /** This method is no necessary
+     *
+     * @param mixed $demos
+     */
+   /* public function setDemos($demos)
+    {
+        $this->demos = $demos;
+    }**/
+
+    /**
+     * @return mixed
+     */
+    public function getDemos()
+    {
+        return $this->demos;
+    }
 
     /**
      * Get id
@@ -163,7 +209,7 @@ class User implements AdvancedUserInterface{
      */
     public function eraseCredentials()
     {
-        // TODO: Implement eraseCredentials() method.
+        $this->setPlainPassword(null);
     }
 
     /**
@@ -263,5 +309,62 @@ class User implements AdvancedUserInterface{
     public function getEmail()
     {
         return $this->email;
+    }
+
+    /**
+     * (PHP 5 &gt;= 5.1.0)<br/>
+     * String representation of object
+     * @link http://php.net/manual/en/serializable.serialize.php
+     * @return string the string representation of the object or null
+     */
+    public function serialize()
+    {
+        return serialize(array(
+            $this->id,
+            $this->username,
+            $this->password
+        ));
+    }
+
+    /**
+     * (PHP 5 &gt;= 5.1.0)<br/>
+     * Constructs the object
+     * @link http://php.net/manual/en/serializable.unserialize.php
+     * @param string $serialized <p>
+     * The string representation of the object.
+     * </p>
+     * @return void
+     */
+    public function unserialize($serialized)
+    {
+        list(
+            $this->id,
+            $this->username,
+            $this->password
+            ) = unserialize($serialized);
+    }
+
+    /**
+     * @return string
+     */
+    public function getPlainPassword()
+    {
+        return $this->plainPassword;
+    }
+
+    /**
+     * @param string $plainPassword
+     */
+    public function setPlainPassword($plainPassword)
+    {
+        $this->plainPassword = $plainPassword;
+        //it nullify the value so that Doctrine saves the entity
+        //our listener will set the encoded password
+        $this->setPassword(null);
+    }
+
+    public function __toString()
+    {
+        return (string) $this->getUsername();
     }
 }

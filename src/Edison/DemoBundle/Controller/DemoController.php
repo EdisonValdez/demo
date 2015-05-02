@@ -3,12 +3,13 @@
 namespace Edison\DemoBundle\Controller;
 
 use Symfony\Component\HttpFoundation\Request;
-use Symfony\Bundle\FrameworkBundle\Controller\Controller;
+//use Edison\DemoBundle\Controller\Controller;
 
 use Edison\DemoBundle\Entity\Demo;
 use Edison\DemoBundle\Form\DemoType;
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\Template;
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\Route;
+use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\Security\Core\Exception\AccessDeniedException;
 /**
  * Demo controller.
@@ -24,11 +25,19 @@ class DemoController extends Controller
      */
     public function indexAction()
     {
+        return array();
+    }
+
+    public function _upcomingDemosAction($max = null)
+    {
         $em = $this->getDoctrine()->getManager();
 
-        $entities = $em->getRepository('DemoBundle:Demo')->findAll();
+        $demos = $em->getRepository('DemoBundle:Demo')
+            ->getUpcomingDemos($max);
 
-        return  array('entities' => $entities,);
+        return $this->render('DemoBundle:Demo:_upcomingDemos.html.twig', array(
+            'demos' => $demos
+        ));
     }
     /**
      * Creates a new Demo entity.
@@ -36,18 +45,33 @@ class DemoController extends Controller
      */
     public function createAction(Request $request)
     {
-        $this->enforceUserSecurity();
+        $this->enforceUserSecurity('ROLE_EVENT_CREATE');
+
 
         $entity = new Demo();
         $form = $this->createCreateForm($entity);
         $form->handleRequest($request);
 
         if ($form->isValid()) {
+            $user = $this->getUser();
+            // this logic here works perfect
+            //this is setting the owning side of the relationship
+            $entity->setOwner($user);
+
+            //this would do nothing
+            // it sets the inverse side
+            //We delete setDemos from entity as it
+            //doesn't do anything!
+            /*
+            $demos = $user->getDemos();
+            $demos[] = $entity;
+            $user->setDemos($demos);*/
+
             $em = $this->getDoctrine()->getManager();
             $em->persist($entity);
             $em->flush();
 
-            return $this->redirect($this->generateUrl('demo_show', array('id' => $entity->getId())));
+            return $this->redirect($this->generateUrl('demo_show', array('slug' => $entity->getSlug())));
         }
 
         return $this->render('DemoBundle:Demo:new.html.twig', array(
@@ -82,7 +106,7 @@ class DemoController extends Controller
      */
     public function newAction()
     {
-        $this->enforceUserSecurity();
+        $this->enforceUserSecurity('ROLE_EVENT_CREATE');
 
         $entity = new Demo();
         $form   = $this->createCreateForm($entity);
@@ -97,17 +121,18 @@ class DemoController extends Controller
      * Finds and displays a Demo entity.
      *
      */
-    public function showAction($id)
+    public function showAction($slug)
     {
         $em = $this->getDoctrine()->getManager();
 
-        $entity = $em->getRepository('DemoBundle:Demo')->find($id);
+        $entity = $em->getRepository('DemoBundle:Demo')
+            ->findOneBy(array('slug' => $slug));
 
         if (!$entity) {
             throw $this->createNotFoundException('Unable to find Demo entity.');
         }
 
-        $deleteForm = $this->createDeleteForm($id);
+        $deleteForm = $this->createDeleteForm($entity->getId());
 
         return $this->render('DemoBundle:Demo:show.html.twig', array(
             'entity'      => $entity,
@@ -121,7 +146,7 @@ class DemoController extends Controller
      */
     public function editAction($id)
     {
-        $this->enforceUserSecurity();
+        $this->enforceUserSecurity('ROLE_EVENT_CREATE');
 
         $em = $this->getDoctrine()->getManager();
 
@@ -130,6 +155,7 @@ class DemoController extends Controller
         if (!$entity) {
             throw $this->createNotFoundException('Unable to find Demo entity.');
         }
+        $this->enforceOwnerSecurity($entity);
 
         $editForm = $this->createEditForm($entity);
         $deleteForm = $this->createDeleteForm($id);
@@ -165,7 +191,7 @@ class DemoController extends Controller
      */
     public function updateAction(Request $request, $id)
     {
-        $this->enforceUserSecurity();
+        $this->enforceUserSecurity('ROLE_EVENT_CREATE');
 
         $em = $this->getDoctrine()->getManager();
 
@@ -174,6 +200,8 @@ class DemoController extends Controller
         if (!$entity) {
             throw $this->createNotFoundException('Unable to find Demo entity.');
         }
+        $this->enforceOwnerSecurity($entity);
+
 
         $deleteForm = $this->createDeleteForm($id);
         $editForm = $this->createEditForm($entity);
@@ -197,7 +225,7 @@ class DemoController extends Controller
      */
     public function deleteAction(Request $request, $id)
     {
-        $this->enforceUserSecurity();
+        $this->enforceUserSecurity('ROLE_EVENT_CREATE');
 
         $form = $this->createDeleteForm($id);
         $form->handleRequest($request);
@@ -210,6 +238,8 @@ class DemoController extends Controller
                 throw $this->createNotFoundException('Unable to find Demo entity.');
             }
 
+            $this->enforceOwnerSecurity($entity);
+
             $em->remove($entity);
             $em->flush();
         }
@@ -217,6 +247,73 @@ class DemoController extends Controller
         return $this->redirect($this->generateUrl('demo'));
     }
 
+    public function likesAction($id, $format)
+    {
+        $em = $this->getDoctrine()->getManager();
+        $demo = $em->getRepository('DemoBundle:Demo')
+            ->find($id);
+
+        if(!$demo){
+           throw $this->createNotFoundException('No demo found for id ');
+        }
+
+        if(!$demo->hasLikes($this->getUser())){
+           $demo->getLikes()->add($this->getUser());
+           // throw $this->createNotFoundException('No demo found for id '.$id);
+        }
+
+        $em->persist($demo);
+        $em->flush();
+
+        return $this->createLikesResponse($demo, $format);
+
+    }
+
+    public function unlikesAction($id, $format)
+    {
+        $em = $this->getDoctrine()->getManager();
+        $demo = $em->getRepository('DemoBundle:Demo')
+            ->find($id);
+
+        if(!$demo){
+            throw $this->createNotFoundException('No demo found for id ');
+        }
+
+        if($demo->hasLikes($this->getUser()))
+        {
+            $demo->getLikes()->removeElement($this->getUser());
+        }
+
+        $em->persist($demo);
+        $em->flush();
+
+        return $this->createLikesResponse($demo, $format);
+
+    }
+
+    /**
+     * @param Demo $demo
+     * @param string $format
+     * @return \Symfony\Component\HttpFoundation\Response
+     */
+    public function createLikesResponse(Demo $demo, $format)
+    {
+        if($format == 'json')
+        {
+         $data = array(
+             'likes' => $demo->hasLikes($this->getUser())
+         );
+            $response = new JsonResponse($data);
+
+            return $response;
+        }
+
+        $url = $this->generateUrl('demo_show', array(
+            'slug' => $demo->getSlug()
+        ));
+
+        return $this->redirect($url);
+    }
     /**
      * Creates a form to delete a Demo entity by id.
      *
@@ -234,14 +331,26 @@ class DemoController extends Controller
         ;
     }
 
-    private function enforceUserSecurity()
+    private function enforceUserSecurity($role = 'ROLE_USER')
     {
         //if we are in Symfony 2.5 or higher
         // throw $this->createAccessDeniedException('Nedd ROLE_ADMIN');
-        $securityContext = $this->get('security.context');
-        if(!$securityContext->isGranted('ROLE_USER'))
+
+        if(!$this->getSecurityContext()->isGranted($role))
         {
-            throw new AccessDeniedException('Need ROLE_USER');
+            throw new AccessDeniedException('Need '.$role);
         }
     }
+
+    /*private function enforceOwnerSecurity(Demo $demo)
+    {
+        $user = $this->getUser();
+
+        if($user != $demo->getOwner())
+        {
+            throw $this->createAccessDeniedException('You are not the owner of this Event!');
+        }
+    }*/
+
+
 }

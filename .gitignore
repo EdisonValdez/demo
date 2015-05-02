@@ -1,6 +1,6 @@
 /app/bootstrap.php.cache
-/app/cache/*
-!app/cache/.gitkeep
+/app/cacheOriginal/*
+!app/cacheOriginal/.gitkeep
 /app/config/parameters.yml
 /app/logs/*
 !app/logs/.gitkeep
@@ -9,3 +9,6 @@
 /composer.phar
 /vendor/
 /web/bundles/
+/web/css/built
+/web/js/built
+/node_modules

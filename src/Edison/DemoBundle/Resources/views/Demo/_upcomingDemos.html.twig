@@ -1,0 +1,25 @@
+ {% for demo in demos %}
+     <tr>
+         <td><a href="{{ path('demo_show', { 'slug': demo.slug }) }}">{{ demo.name }}</a></td>
+         <td>{{ demo.name }}</td>
+         <td>
+             <img src="http://maps.googleapis.com/maps/api/staticmap?center={{ demo.location | url_encode }}&markers=color:red%7Ccolor:red%7C{{ demo.location | url_encode }}&zoom=11&size=100x100&maptype=roadmap&sensor=false" style="border-radius: 75px;" />
+         </td>
+         <td>{% if demo.time %}{{ demo.time|date('Y-m-d H:i:s') }}{% endif %}</td>
+         <td>{{ demo.location }}</td>
+         <td>{{ demo.details }}</td>
+         <td>{{ demo.createdAt|ago }}</td>
+         <td>
+             <ul>
+                 <li>
+                     <a href="{{ path('demo_show', { 'slug': demo.slug }) }}">show</a>
+                 </li>
+                 {% if app.user == demo.owner %}
+                     <li>
+                         <a href="{{ path('demo_edit', { 'id': demo.id }) }}">edit</a>
+                     </li>
+                 {% endif %}
+             </ul>
+         </td>
+     </tr>
+ {% endfor %}

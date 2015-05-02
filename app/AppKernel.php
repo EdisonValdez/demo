@@ -19,6 +19,8 @@ class AppKernel extends Kernel
             new AppBundle\AppBundle(),
             new Edison\DemoBundle\DemoBundle(),
             new Edison\UserBundle\UserBundle(),
+            new Stof\DoctrineExtensionsBundle\StofDoctrineExtensionsBundle(),
+
         );
 
         if (in_array($this->getEnvironment(), array('dev', 'test'))) {

@@ -1,0 +1,58 @@
+{# src/Yoda/UserBundle/Resources/views/Security/login.html.twig #}
+{% extends '::base.html.twig' %}
+
+{% block body %}
+
+    <div class="row-welcome{$content_class}">
+        <div class="row-body">
+            <div class="welcome-inner">
+                <div class="welcome-message">
+                    <div class="welcome-title">
+                        Register
+                    </div>
+                    <div class="welcome-desc">
+                        And get easiest as never your quotations
+                    </div>
+                    <div class="welcome-about">
+                        Easy, reliable!
+                    </div>
+                </div>
+                <div class="welcome-inputs">
+
+                     <form action="{{ path('user_register') }}" method="POST" autocomplete="off" novalidate>
+
+                         <div>
+                            {{ form_errors(form) }}
+                         </div>
+
+                         {{ form_row(form.username, {
+                         'attr': { 'class': 'the-username-field' },
+                         'help': 'Choose something unique and clever'
+                         }) }}
+                         {{ form_row(form.email, {'label': 'Email'}) }}
+                         {{ form_row(form.plainPassword.first, {
+                                        'label': 'Password'}) }}
+                         {{ form_row(form.plainPassword.second, {
+                                        'label': 'Repeat Password'}) }}
+                         {{ form_rest(form) }}
+                         <button type="submit" name="register"  class="register-button">Register</button>
+
+                     </form>
+                     <br />
+
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="welcome-full">
+        <div class="row-body">
+            <div class="welcome-inner">
+                <!-- {$rows}-->
+            </div>
+        </div>
+    </div>
+
+
+
+
+{% endblock %}

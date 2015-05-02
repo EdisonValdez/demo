@@ -3,15 +3,6 @@
 
 {% block body %}
 
-    <div class="topbar">
-        <div class="header">
-            <a href="http://phpdolphin.com/demo"><div class="logo"></div><div class="logo-small"></div></a>
-            <div class="search-input"><input type="text" id="search" placeholder="search people, hashtags"></div>
-
-            <a href="http://phpdolphin.com/demo/index.php?a=welcome"><div class="menu_btn" title="Register"><img src="http://phpdolphin.com/demo/themes/dolphin/images/register.png" /></div></a>
-            <a href="#"><div class="menu_visitor">Hello <strong>Visitor</strong></div></a>
-        </div>
-        <div class="search-container"></div>
     </div>
     <div class="topbar_margin"></div>
     <div class="row-welcome{$content_class}">
@@ -39,7 +30,12 @@
                         <label for="password">Password:</label>
                         <input type="password" id="short"  name="_password" />
 
+                        <label for="remember_me">Remember me:</label>
+                        <input type="checkbox"  style="width:50px" name="_remember_me"/>
+                        <br>
                         <button type="submit" class="register-button">login</button>
+
+
                     </form>
 
                    <!--

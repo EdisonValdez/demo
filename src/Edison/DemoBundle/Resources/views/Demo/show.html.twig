@@ -1,18 +1,40 @@
 {% extends 'DemoBundle::layout.html.twig' %}
 
 {% block body -%}
+    <div class="row-body content-profile">
     <h1>Demo</h1>
 
-    <table class="record_properties">
+    <table class="table table-hover">
         <tbody>
             <tr>
-                <th>Id</th>
-                <td>{{ entity.id }}</td>
+                <th>Likes</th>
+                <td>{{ entity.likes|length }} Recommended.&nbsp;&nbsp;&nbsp;
+                    <ul class="list-group" id="share">
+                        {% for like in entity.likes %}
+                            <li class="list-group-item">{{ likes.username }}</li>
+                        {% else %}
+                            <li class="list-group-item">Do you recommend it?</li>
+                        {% endfor %}
+                    </ul>
+                    {% if is_granted('IS_AUTHENTICATED_REMEMBERED') %}
+                    {% if entity.hasLikes(app.user) %}
+                         <a class="unrecommend_btn js-likes-toggle" href="{{ path('demo_unlikes', {'id': entity.id}) }}" title="Unrecommend" ></a>
+                     {% else %}
+                         <a class="recommend_btn js-likes-toggle" href="{{ path('demo_likes', {'id': entity.id}) }}" title="Recommend"></a>
+                    {% endif %}
+                    {% endif %}
+
+                </td>
+            </tr>
+            <tr>
+                <th>Owner</th>
+                <td>{{ entity.owner.username }}</td>
             </tr>
             <tr>
                 <th>Google Map</th>
                 <td>
-                     <img src="http://maps.googleapis.com/maps/api/staticmap?center={{ entity.location | url_encode }}&markers=color:red%7Ccolor:red%7C{{ entity.location | url_encode }}&zoom=14&size=300x300&maptype=roadmap&sensor=false" />
+                     <img src="http://maps.googleapis.com/maps/api/staticmap?center={{ entity.location | url_encode }}&markers=color:red%7Ccolor:red%7C{{ entity.location | url_encode }}&zoom=16&size=300x300&maptype=roadmap&sensor=false" />
+
                 </td>
             </tr>
             <tr>
@@ -34,17 +56,49 @@
         </tbody>
     </table>
 
-        <ul class="record_actions">
-    <li>
+        <ul class="list-group">
+    <li class="list-group-item">
         <a href="{{ path('demo') }}">
             Back to the list
         </a>
     </li>
-    <li>
+            {% if app.user == entity.owner %}
+    <li class="list-group-item">
         <a href="{{ path('demo_edit', { 'id': entity.id }) }}">
             Edit
         </a>
     </li>
-    <li>{{ form(delete_form) }}</li>
+            {% endif %}
+            {% if app.user == entity.owner %}
+    <li class="list-group-item">{{ form(delete_form) }}</li>
+            {% endif %}
 </ul>
+    </div>
+{% endblock %}
+
+
+{% block javascripts %}
+    {{ parent() }}
+    <script>
+    $(document).ready(function() {
+    $('.js-likes-toggle').on('click', function(e) {
+    // prevents the browser from "following" the link
+    e.preventDefault();
+
+    var $anchor = $(this);
+    var url = $(this).attr('href')+'.json';
+
+    $.post(url, null, function(data) {
+    if (data.likes) {
+    var message = 'Thank You for recommend me!';
+    } else {
+    var message = 'Oh no, Did We do something wrong?';
+    }
+
+    $anchor.after('<span class="alert-success" >&#10004; '+message+'</span>');
+    $anchor.hide();
+    });
+    });
+    });
+    </script>
 {% endblock %}

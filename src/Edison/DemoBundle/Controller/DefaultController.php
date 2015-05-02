@@ -2,7 +2,6 @@
 
 namespace Edison\DemoBundle\Controller;
 
-use Symfony\Bundle\FrameworkBundle\Controller\Controller;
 //use Symfony\Component\HttpFoundation\Response;
 
 class DefaultController extends Controller
@@ -12,10 +11,10 @@ class DefaultController extends Controller
         $em = $this->getDoctrine()->getManager();
         $repo = $em->getRepository('DemoBundle:Demo');
 
-        $demo = $repo->findOneBy(array('name' => 'Edison'));
+        $demo = $repo->findOneBy(array('name' => 'EdisonValdez'));
 
        return $this->render(
-            'DemoBundle:Default:index.html.twig', array('name' => 'Edison', 'demo' => $demo)
+            'DemoBundle:Default:index.html.twig', array('name' => 'EdisonValdez', 'demo' => $demo)
         );
     }
 }

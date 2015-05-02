@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 <html>
     <head>
+
         <meta name="viewport" content="width=device-width, minimum-scale=1.0, maximum-scale=1.0" />
         <link rel="shortcut icon" href="bundles/demo/images/icon.ico" />
         <title>
@@ -11,18 +12,58 @@
                 {%- endif -%}
         </title>
         {% block stylesheets %}
+            <link rel="stylesheet" href="//maxcdn.bootstrapcdn.com/bootstrap/3.3.4/css/bootstrap.min.css">
+
             {% stylesheets
             'bundles/demo/css/style.css'
                 filter='cssrewrite'
+                filter='?uglifycss'
+                 output='css/built/layout.css'
             %}
-            <link href="{{ asset_url }}" rel="stylesheet">
-        {% endstylesheets %}
+            <link rel="stylesheet" href="{{ asset_url }}" />
+            {% endstylesheets %}
+
         {% endblock %}
         <link rel="icon" type="image/x-icon" href="{{ asset('favicon.ico') }}" />
+
     </head>
     <body>
 
+    <div class="topbar">
+        <div class="header">
+            <a href="http://127.0.0.1:8000"><div class="logo"></div><div class="logo-small"></div></a>
+            <div class="search-input"><input type="text" id="search" placeholder="search companies"></div>
+            {% if app.user %}
+            <!-- Nothing here  -->
+            {% else %}
+            <a href="register"><div class="menu_btn" title="Register"><img src="bundles/demo/images/register.png" /></div></a>
+            {% endif %}
+            {% if is_granted('IS_AUTHENTICATED_REMEMBERED') %}
+            <div class="menu_visitor"><a class="" style="color:#fff;" href="{{ path('logout') }}">
+                                <strong>Logout</strong></a>  | Logged in as {{ app.user.username }}
+
+                            {% else %}
+                       <div class="menu_visitor">Hello <strong>Visitor</strong></div>
+                        {% endif %}
+                    </div>
+        </div>
+        <div class="search-container"></div>
+    </div>
+    <div class="topbar_margin"></div>
+        {% if app.session.flashbag.has('success') %}
+            <div class="notification-box box-transparent notification-box-transparent">
+                {% for msg in app.session.flashbag.get('success') %}
+                {{ msg }}
+            {% endfor %}
+            </div>
+        {% endif %}
+
+
         {% block body %}{% endblock %}
-        {% block javascripts %}{% endblock %}
+    {% block javascripts %}
+        <script src="//code.jquery.com/jquery-1.11.0.min.js"></script>
+    {% endblock %}
+
     </body>
 </html>
+
